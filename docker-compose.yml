@@ -1,0 +1,150 @@
+# docker-compose up -d redis mongodb mysql postgresql rabbitmq
+version: '3.9'
+services:
+  redis:
+    container_name: redis_container
+    image: redis:alpine
+    restart: always
+    ports:
+      - 6379:6379
+    command: redis-server --loglevel warning
+    volumes:
+      - ./docker-volumes/cache:/data
+
+  mongodb:
+    container_name: mongodb_container
+    image: mongo:latest
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - ./docker-volumes/data:/data/db
+
+  mysql:
+    container_name: mysql_container
+    image: mysql
+    restart: always
+    ports:
+      - 3307:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=Admin@123
+      - MYSQL_DATABASE=tourism_auth
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=Admin@123
+    volumes:
+      - ./docker-volumes/mysql:/var/lib/mysql
+
+  postgresql:
+    container_name: postgresql_container
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: Admin@123
+      POSTGRES_USER: admin
+      POSTGRES_DATABASE: tourism_reviews
+    volumes:
+      - ./docker-volumes/postgres:/var/lib/postgresql
+
+  rabbitmq:
+    container_name: rabbitmq_container
+    image: rabbitmq:management-alpine
+    restart: always
+    ports:
+      # AMQP protocol port
+      - '5672:5672'
+      # Management Dashboard UI port
+      - '15672:15672'
+
+  # elastic_search:
+  #   container_name: elastic_search_container
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.14.3
+  #   restart: always
+  #   ports:
+  #     - '9200:9200'
+  #     # - 9300:9300 # for multi node cluster
+  #   environment:
+  #     - ES_JAVA_OPTS=-Xms512m -
+  #     # - ES_JAVA_OPTS=-Xms1g -Xmx1g
+  #     - ELASTIC_PASSWORD=Admin@123
+  #     - bootstrap.memory_lock=true
+  #     - discovery.type=single-node
+  #     - network.host=0.0.0.0
+  #     - http.host=0.0.0.0
+  #     - transport.host=127.0.0.1
+  #     - xpack.security.enabled=true
+  #     - xpack.security.authc.api_key.enabled=true
+  #     - xpack.monitoring.collection.enabled=true
+  #     - xpack.security.enrollment.enabled=true
+  #     - xpack.security.authc.token.enabled=true
+
+  #   volumes:
+  #     - ./docker-volumes/elastic-search-data:/usr/share/elasticsearch/data
+  #   networks:
+  #     - elastic
+
+  # kibana:
+  #   container_name: kibana_container
+  #   image: docker.elastic.co/kibana/kibana:8.14.3
+  #   restart: always
+  #   ports:
+  #     - '5601:5601'
+  #   environment:
+  #     - ELASTICSEARCH_HOSTS=["http://elastic_search_container:9200"]
+  #     - ELASTICSEARCH_USERNAME=elastic
+  #     - ELASTICSEARCH_PASSWORD=Admin@123
+
+  #   volumes:
+  #     - ./kibana.yml:/usr/share/kibana/config/kibana.yml:ro 
+  #   depends_on:
+  #     - elastic_search
+  #   networks:
+  #     - elastic
+
+  elasticsearch:
+    container_name: elasticsearch_container
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.2
+    restart: always
+    environment:
+      ES_JAVA_OPTS: -Xmx1g -Xms1g
+      bootstrap.memory_lock: "true"
+      discovery.type: single-node
+      network.host: 0.0.0.0
+      transport.host: 127.0.0.1
+      http.host: 0.0.0.0
+      xpack.security.enabled: "true"
+      xpack.security.authc.api_key.enabled: "true"
+      xpack.monitoring.collection.enabled: "true"
+      xpack.security.enrollment.enabled: "true"
+      xpack.security.authc.token.enabled: "true"
+      ELASTIC_PASSWORD: Admin@123
+    ports:
+      - 9200:9200
+    volumes:
+      - ./docker-volumes/elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - elastic
+
+  kibana:
+    container_name: kibana_container
+    image: docker.elastic.co/kibana/kibana:8.12.2
+    restart: always
+    environment:
+      - ELASTICSEARCH_HOSTS=["http://elasticsearch_container:9200"]
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=kibana
+      # - ELASTICSEARCH_SERVICEACCOUNT_TOKEN=
+      - XPACK_FLEET_AGENTS_ELASTICSEARCH_HOSTS=["http://elasticsearch_container:9200"]
+    ports:
+      - 5601:5601
+    networks:
+      - elastic
+    volumes:
+      - ./kibana.yml/:/usr/share/kibana/config/kibana.yml:ro
+    depends_on:
+      - elasticsearch
+
+networks:
+  elastic:
+    name: elastic

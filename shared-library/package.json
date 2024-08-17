@@ -1,6 +1,6 @@
 {
   "name": "@abdulmujeebcs/ecommerce-microservices-shared-library",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "* The shared library contains codes that are used acrossed the microservices. * The idea behind this was to prevent code duplication. * The library is published as an npm package to `github package registry`. * You need to publish this `shared library` to `github package registry` to be able to use it.",
   "main": "index.js",
   "engines": {
@@ -22,15 +22,15 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/uzochukwueddie/jobberapp/tree/main/microservices.git"
+    "url": "git+https://github.com/abdulmujeebcs/ecommerce-microservices-shared-library.git"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
   "exports": {
     ".": {
-      "import": "./esm/index.js",
-      "require": "./cjs/index.js"
+      "import": "./src/index.js",
+      "require": "./src/index.js"
     },
     "./icons": {
       "import": "./esm/icons/index.js",
